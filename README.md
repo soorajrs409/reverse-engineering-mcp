@@ -105,7 +105,7 @@ Edit your `config.json` (typically `~/Library/Application Support/Claude/config.
         "-i",
         "--rm",
         "-v", "radare2-cache:/app/.r2_projects",
-        "-v", "/path/to/your/binaries:/data",
+        "-v", "<path-to-your-binaries>:/data",
         "radare2-mcp"
       ]
     }
@@ -119,7 +119,7 @@ Edit your `config.json` (typically `~/Library/Application Support/Claude/config.
 2. Click **+ Add New MCP Server**.
 3. Name: `Radare2 MCP`
 4. Type: `command`
-5. Command: `uv run --project /path/to/radare2-mcp main.py`
+5. Command: `uv run --project <path-to-repo> main.py`
 
 ### Windsurf
 
@@ -133,7 +133,7 @@ Add to your `mcp_config.json`:
       "args": [
         "run",
         "--project",
-        "/path/to/radare2-mcp",
+        "<path-to-repo>",
         "main.py"
       ]
     }

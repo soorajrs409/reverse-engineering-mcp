@@ -4,7 +4,7 @@ services:
     volumes:
       - .r2_projects:/app/.r2_projects
       # Mount host binaries here
-      # - /path/to/binaries:/data
+      # - <path-to-binaries>:/data
     restart: unless-stopped
 
 volumes:
