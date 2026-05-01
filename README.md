@@ -12,37 +12,58 @@ Security researchers often need to perform deep, incremental analysis of binarie
 
 **Radare2 MCP** solves this by providing a persistent analysis environment. Every binary analyzed is tracked as a Radare2 project, ensuring that your insights persist and the LLM can "pick up where it left off."
 
-## Feature Deep Dive
+## Capabilities & Tool Reference
 
-### 1. Static Analysis & Decompilation
-Explore the binary without executing it. Use multiple decompiler backends to get clean pseudo-code.
-*   **Example**: `Analyze the binary at samples/test_binary. What does the main function do?`
-*   **Tools**: `get_r2_decompile`, `get_r2_disassemble`, `get_r2_binary_info`.
+Radare2 MCP provides a wide array of tools categorized by their role in the binary analysis lifecycle.
 
-### 2. Interactive Debugging
-Control process execution in real-time. Set breakpoints, step through instructions, and inspect live memory/registers.
-*   **Example**: `Debug samples/test_binary. Break at main, run, and then step 5 times while showing me the RIP register.`
-*   **Tools**: `r2_debug_start`, `r2_debug_action`, `r2_debug_read_state`.
+### 🛠 Tool Overview
 
-### 3. Exploit Research (ROP & Mitigations)
-Identify security weaknesses and find primitives for exploit development.
-*   **Example**: `Search for ROP gadgets in samples/test_binary that end with 'jmp rax'. Also check if the binary has Stack Canaries enabled.`
-*   **Tools**: `get_r2_rop_gadgets`, `get_r2_analyze_mitigations`.
+| Category | Tool Name | Description | Key Features |
+| :--- | :--- | :--- | :--- |
+| **Static Analysis** | `get_r2_decompile` | High-level pseudo-code generation. | Supports Ghidra, r2dec, and native backends. |
+| | `get_r2_disassemble` | Low-level assembly listing. | Configurable instruction count and address. |
+| | `get_r2_binary_info` | Metadata and architecture details. | Arch, bits, endianness, and compiler info. |
+| | `get_r2_list_imports` | Enumerates imported symbols. | Detects dangerous sinks (e.g., `strcpy`, `system`). |
+| **Interactive Debug** | `r2_debug_start` | Spawns a new debug session. | Handles ASLR and environment setup. |
+| | `r2_debug_action` | Controls execution (step, cont). | Breakpoints, stepping, and signal handling. |
+| | `r2_debug_read_state` | Captures live process context. | Full register sets and current instruction. |
+| **Exploit Research** | `get_r2_rop_gadgets` | Searches for ROP primitives. | Regex-based gadget filtering. |
+| | `get_r2_analyze_mitigations` | Audits binary protections. | NX, Canary, PIE, RELRO, ASLR. |
+| | `get_r2_get_xrefs` | Finds cross-references (XREFs). | Trace where data/functions are used. |
+| **Persistence** | `get_r2_rename_symbol` | Renames functions or offsets. | Changes persist in the `.r2_projects/` database. |
+| | `get_r2_set_comment` | Annotates the disassembly. | Add researcher notes to specific addresses. |
+| **Modification** | `get_r2_patch_asm` | Rewrites code via assembly. | NOP-out checks or redirect branches. |
+| | `get_r2_patch_hex` | Direct byte-level patching. | Precise modification of data or code. |
+| **Advanced** | `get_r2_emulate_function` | ESIL-based static emulation. | Predict register state without execution. |
+| | `get_r2_define_type` | C-style type management. | Define structs, unions, and typedefs. |
 
-### 4. Persistence & State Management
-Rename obfuscated functions and add comments that stay there across sessions.
-*   **Example**: `Rename the function at 0x1234 to 'validate_license' and add a comment 'This is where the check happens'.`
-*   **Tools**: `get_r2_rename_symbol`, `get_r2_set_comment`.
+---
 
-### 5. Binary Patching
-Modify the binary directly to bypass checks or fix bugs.
-*   **Example**: `In samples/test_binary, the instruction at 0x11ae is a JNE. Patch it to a JMP to always bypass the check.`
-*   **Tools**: `get_r2_patch_asm`, `get_r2_patch_hex`.
+## Detailed Usage Guide
 
-### 6. Type Management & Emulation
-Define custom structs and emulate code paths to predict behavior without a full debugger.
-*   **Example**: `Define a struct 'Config' with an int and a char array. Apply it at 0x4000 and emulate 'init_config' to see how it fills the struct.`
-*   **Tools**: `get_r2_define_type`, `get_r2_apply_type`, `get_r2_emulate_function`.
+### 🔍 Deep Analysis
+> "Analyze the binary at `samples/test_binary`. Find the `main` function, show me its disassembly, and then provide the Ghidra-style pseudo-code."
+
+1. **Information Gathering**: The agent uses `get_r2_binary_info` to understand the target.
+2. **Locating**: Uses `get_r2_disassemble(address_or_symbol="main")`.
+3. **Decompiling**: Uses `get_r2_decompile(address_or_symbol="main")`.
+
+### 🐞 Live Debugging
+> "Debug `samples/test_binary`. Set a breakpoint at the address where it calls `strcpy`, run it, and tell me what's in the RDI register when it hits."
+
+1. **Initialization**: `r2_debug_start(file_path="samples/test_binary")`.
+2. **Control**: `r2_debug_action(action="db sym.imp.strcpy")` then `r2_debug_action(action="dc")`.
+3. **Inspection**: `r2_debug_read_state()` to extract register values.
+
+### 🛠 Binary Surgery
+> "I found a license check at `0x11ab` that returns 0 on failure. Patch the binary so it always returns 1."
+
+1. **Research**: Verify the instruction with `get_r2_disassemble`.
+2. **Action**: `get_r2_patch_asm(instruction="mov eax, 1; ret")`.
+3. **Verification**: Re-disassemble to confirm the patch.
+
+### 🧠 Persistence & Knowledge Building
+Unlike raw Radare2, the MCP environment **remembers**. If you rename a function in one turn, every future tool call in that project will use the new name. This allows for long-term, incremental reverse engineering of complex targets.
 
 ## Prerequisites
 
