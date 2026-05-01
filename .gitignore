@@ -15,4 +15,4 @@ wheels/
 .docker/
 docker-compose.override.yml
 
-.GEMINI.md
+GEMINI.md
