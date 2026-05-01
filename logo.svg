@@ -1,0 +1,23 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="200" height="200" rx="20" fill="#2d2d2d"/>
+  
+  <!-- Hex Pattern (Subtle) -->
+  <path d="M10 30 L190 30 M10 60 L190 60 M10 90 L190 90 M10 120 L190 120 M10 150 L190 150 M10 180 L190 180" stroke="#3d3d3d" stroke-width="1"/>
+  <path d="M30 10 L30 190 M60 10 L60 190 M90 10 L90 190 M120 10 L120 190 M150 10 L150 190 M180 10 L180 190" stroke="#3d3d3d" stroke-width="1"/>
+
+  <!-- Radare2 'r2' Square Style -->
+  <rect x="40" y="40" width="120" height="120" rx="10" fill="#e74c3c"/>
+  
+  <!-- Text: r2 -->
+  <text x="100" y="115" font-family="monospace" font-size="60" font-weight="bold" fill="white" text-anchor="middle">r2</text>
+  
+  <!-- MCP Label -->
+  <rect x="60" y="140" width="80" height="30" rx="5" fill="#f1c40f"/>
+  <text x="100" y="162" font-family="sans-serif" font-size="18" font-weight="bold" fill="#2c3e50" text-anchor="middle">MCP</text>
+  
+  <!-- Stylized Console Cursor -->
+  <rect x="135" y="75" width="15" height="30" fill="white">
+    <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" />
+  </rect>
+</svg>

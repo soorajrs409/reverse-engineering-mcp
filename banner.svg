@@ -1,0 +1,37 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2c3e50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="hex-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 15 0 L 30 7.5 L 30 22.5 L 15 30 L 0 22.5 L 0 7.5 Z" fill="none" stroke="#1a252f" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="200" fill="url(#grad1)" />
+  <rect width="800" height="200" fill="url(#hex-grid)" />
+
+  <!-- Binary Stream (Faded) -->
+  <text x="10" y="20" font-family="monospace" font-size="10" fill="#16a085" opacity="0.3">01010111 01100101 01101100 01100011 01101111 01101101 01100101</text>
+  <text x="10" y="40" font-family="monospace" font-size="10" fill="#16a085" opacity="0.2">01110100 01101111 00100000 01010010 01100001 01100100 01100001</text>
+  <text x="10" y="60" font-family="monospace" font-size="10" fill="#16a085" opacity="0.1">01110010 01100101 00110010 00100000 01001101 01000011 01010000</text>
+
+  <!-- Radare2 Icon -->
+  <rect x="50" y="50" width="100" height="100" rx="15" fill="#e74c3c" />
+  <text x="100" y="115" font-family="monospace" font-size="60" font-weight="bold" fill="white" text-anchor="middle">r2</text>
+  
+  <!-- MCP Badge -->
+  <rect x="70" y="130" width="60" height="25" rx="5" fill="#f1c40f" />
+  <text x="100" y="148" font-family="sans-serif" font-size="14" font-weight="bold" fill="#2c3e50" text-anchor="middle">MCP</text>
+
+  <!-- Main Title -->
+  <text x="180" y="100" font-family="sans-serif" font-size="48" font-weight="bold" fill="white">Radare2 MCP</text>
+  <text x="180" y="140" font-family="sans-serif" font-size="18" fill="#bdc3c7">Persistent Binary Analysis Toolset for LLMs</text>
+
+  <!-- Decorative Circuit Path -->
+  <path d="M600 50 L650 50 L650 150 L750 150" fill="none" stroke="#e74c3c" stroke-width="2" stroke-dasharray="5,5" />
+  <circle cx="750" cy="150" r="5" fill="#e74c3c" />
+  <circle cx="600" cy="50" r="5" fill="#e74c3c" />
+</svg>
