@@ -74,18 +74,18 @@ Unlike raw Radare2, the MCP environment **remembers**. If you rename a function 
 
 ## Installation
 
-### Local Setup (with uv)
-
-```bash
-uv run main.py
-```
-
-### Docker Setup
+### Docker (Recommended)
 
 ```bash
 docker build -t radare2-mcp .
 # Run the server
 docker run -i --rm radare2-mcp
+```
+
+### Local Setup (with uv)
+
+```bash
+uv run main.py
 ```
 
 ## Agent Configuration
@@ -118,25 +118,7 @@ Edit your `claude_desktop_config.json` (typically `~/Library/Application Support
 Add the server using the interactive CLI:
 
 ```bash
-claude mcp add radare2 --command uv --args ["run", "--project", "<path-to-repo>", "main.py"]
-```
-
-Or manually edit your `~/.claude.json`:
-
-```json
-{
-  "mcpServers": {
-    "radare2": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--project",
-        "<path-to-repo>",
-        "main.py"
-      ]
-    }
-  }
-}
+claude mcp add radare2 --command docker --args ["run", "-i", "--rm", "-v", "radare2-cache:/app/.r2_projects", "-v", "$(pwd):/data", "radare2-mcp"]
 ```
 
 ### Gemini (via Gemini CLI / Google AI Studio)
@@ -147,12 +129,14 @@ For Gemini-based agents using the Model Context Protocol, add to your `~/.gemini
 {
   "mcpServers": {
     "radare2": {
-      "command": "uv",
+      "command": "docker",
       "args": [
         "run",
-        "--project",
-        "<path-to-repo>",
-        "main.py"
+        "-i",
+        "--rm",
+        "-v", "radare2-cache:/app/.r2_projects",
+        "-v", "/path/to/binaries:/data",
+        "radare2-mcp"
       ]
     }
   }
@@ -161,13 +145,11 @@ For Gemini-based agents using the Model Context Protocol, add to your `~/.gemini
 
 ### Cursor
 
-### Cursor
-
 1. Go to **Settings > Features > MCP**.
 2. Click **+ Add New MCP Server**.
 3. Name: `Radare2 MCP`
 4. Type: `command`
-5. Command: `uv run --project <path-to-repo> main.py`
+5. Command: `docker run -i --rm -v radare2-cache:/app/.r2_projects -v /path/to/binaries:/data radare2-mcp`
 
 ### Windsurf
 
@@ -177,12 +159,14 @@ Add to your `mcp_config.json`:
 {
   "mcpServers": {
     "radare2": {
-      "command": "uv",
+      "command": "docker",
       "args": [
         "run",
-        "--project",
-        "<path-to-repo>",
-        "main.py"
+        "-i",
+        "--rm",
+        "-v", "radare2-cache:/app/.r2_projects",
+        "-v", "/path/to/binaries:/data",
+        "radare2-mcp"
       ]
     }
   }
