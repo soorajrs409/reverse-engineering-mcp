@@ -22,9 +22,15 @@ class DebugSession:
         self.last_access = time.time()
         self.lock = threading.Lock()
         
-        # Initial analysis
-        self.cmd("aa")
-        logger.info(f"Started debug session {self.session_id} for {file_path}")
+        try:
+            # Initial analysis
+            self.cmd("aa")
+            logger.info(f"Started debug session {self.session_id} for {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to initialize debug session: {e}")
+            if self.r2:
+                self.r2.quit()
+            raise
 
     def touch(self):
         self.last_access = time.time()
@@ -87,16 +93,23 @@ class DebugSessionManager:
         while self.running:
             time.sleep(60)  # Check every minute
             now = time.time()
-            expired_ids = []
+            expired_sessions = []
+            
             with self.lock:
-                for sid, session in self.sessions.items():
-                    if now - session.last_access > SESSION_TIMEOUT:
-                        expired_ids.append(sid)
-                
+                expired_ids = [
+                    sid for sid, session in self.sessions.items()
+                    if now - session.last_access > SESSION_TIMEOUT
+                ]
                 for sid in expired_ids:
-                    logger.info(f"Cleaning up expired debug session: {sid}")
-                    session = self.sessions.pop(sid)
+                    logger.info(f"Expiring debug session: {sid}")
+                    expired_sessions.append(self.sessions.pop(sid))
+            
+            # Close expired sessions outside the lock
+            for session in expired_sessions:
+                try:
                     session.close()
+                except Exception as e:
+                    logger.error(f"Error closing expired session {session.session_id}: {e}")
 
     def start_cleanup(self):
         if not self.running:

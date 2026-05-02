@@ -16,7 +16,7 @@ Security researchers often need to perform deep, incremental analysis of binarie
 
 Radare2 MCP provides a wide array of tools categorized by their role in the binary analysis lifecycle.
 
-### 🛠 Tool Overview
+### [~] Tool Overview
 
 | Category | Tool Name | Description | Key Features |
 | :--- | :--- | :--- | :--- |
@@ -28,7 +28,7 @@ Radare2 MCP provides a wide array of tools categorized by their role in the bina
 | | `r2_debug_action` | Controls execution (step, cont). | Breakpoints, stepping, and signal handling. |
 | | `r2_debug_read_state` | Captures live process context. | Full register sets and current instruction. |
 | **Exploit Research** | `get_r2_rop_gadgets` | Searches for ROP primitives. | Regex-based gadget filtering. |
-| | `get_r2_analyze_mitigations` | Audits binary protections. | NX, Canary, PIE, RELRO, ASLR. |
+| | `get_r2_analyze_mitigations` | Audits binary protections. | NX, ASLR, PIE, GS, SafeSEH, etc. |
 | | `get_r2_get_xrefs` | Finds cross-references (XREFs). | Trace where data/functions are used. |
 | **Persistence** | `get_r2_rename_symbol` | Renames functions or offsets. | Changes persist in the `.r2_projects/` database. |
 | | `get_r2_set_comment` | Annotates the disassembly. | Add researcher notes to specific addresses. |
@@ -45,34 +45,41 @@ Radare2 MCP provides a wide array of tools categorized by their role in the bina
 
 ## Detailed Usage Guide
 
-### 🔍 Deep Analysis
+### [+] Deep Analysis
 > "Analyze the binary at `samples/test_binary`. Find the `main` function, show me its disassembly, and then provide the Ghidra-style pseudo-code."
 
 1. **Information Gathering**: The agent uses `get_r2_binary_info` to understand the target.
 2. **Locating**: Uses `get_r2_disassemble(address_or_symbol="main")`.
 3. **Decompiling**: Uses `get_r2_decompile(address_or_symbol="main")`.
 
-### 🐞 Live Debugging
+### [-] Live Debugging
 > "Debug `samples/test_binary`. Set a breakpoint at the address where it calls `strcpy`, run it, and tell me what's in the RDI register when it hits."
 
 1. **Initialization**: `r2_debug_start(file_path="samples/test_binary")`.
 2. **Control**: `r2_debug_action(action="db sym.imp.strcpy")` then `r2_debug_action(action="dc")`.
 3. **Inspection**: `r2_debug_read_state()` to extract register values.
 
-### 🛠 Binary Surgery
+### [*] Binary Surgery
 > "I found a license check at `0x11ab` that returns 0 on failure. Patch the binary so it always returns 1."
 
 1. **Research**: Verify the instruction with `get_r2_disassemble`.
 2. **Action**: `get_r2_patch_asm(instruction="mov eax, 1; ret")`.
 3. **Verification**: Re-disassemble to confirm the patch.
 
-### 🔮 Symbolic Exploration
+### [!] Symbolic Exploration
 > "Find the input required to reach the `success` function in `samples/branch_binary`."
 
 1. **Action**: `get_r2_symbolic_reachability(file_path="samples/branch_binary", target_address="success")`.
-2. **Result**: The tool returns the exact stdin (e.g., `crackme\n`) needed to reach the target.
+2. **Result**: The tool returns the exact stdin (e.g., `crackme
+`) needed to reach the target.
 
-### 🧠 Persistence & Knowledge Building
+### [^] Windows PE Analysis
+> "Download symbols for `kernel32.dll` to improve analysis."
+
+1. **Action**: `get_r2_download_pdb(file_path="C:\Windows\System32\kernel32.dll")`.
+2. **Result**: Radare2 downloads the PDB from Microsoft's symbol server into the local cache, automatically resolving function names.
+
+### [@] Persistence & Knowledge Building
 Unlike raw Radare2, the MCP environment **remembers**. If you rename a function in one turn, every future tool call in that project will use the new name. This allows for long-term, incremental reverse engineering of complex targets.
 
 ## Prerequisites

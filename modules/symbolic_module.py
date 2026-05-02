@@ -62,7 +62,8 @@ def get_r2_symbolic_reachability(file_path: str, target_address: str, avoid_addr
         state = proj.factory.entry_state()
         simgr = proj.factory.simulation_manager(state)
         
-        simgr.explore(find=find_addr, avoid=avoid_addrs)
+        # Limit exploration to prevent memory exhaustion/hangs
+        simgr.explore(find=find_addr, avoid=avoid_addrs, n=100)
 
         if simgr.found:
             found_state = simgr.found[0]
@@ -112,7 +113,7 @@ def get_r2_symbolic_solve_registers(file_path: str, address: str, register_const
             except Exception:
                 return False
 
-        simgr.explore(find=check_constraints)
+        simgr.explore(find=check_constraints, n=100)
 
         if simgr.found:
             found_state = simgr.found[0]
@@ -216,7 +217,7 @@ def get_r2_symbolic_concolic_transition(session_id: str, target_address: str) ->
              return json.dumps({"status": "error", "message": f"Could not resolve target address: {target_address}"})
 
         simgr = proj.factory.simulation_manager(state)
-        simgr.explore(find=find_addr)
+        simgr.explore(find=find_addr, n=100)
 
         if simgr.found:
             found_state = simgr.found[0]

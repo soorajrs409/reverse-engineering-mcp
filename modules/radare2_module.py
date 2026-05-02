@@ -3,12 +3,26 @@ import logging
 import json
 import os
 import hashlib
+import threading
+from typing import Dict
 from fastmcp import FastMCP
 from core.r2_base import mcp_tool_wrapper, r2_cmd_with_retry
 
 logger = logging.getLogger("radare2-mcp.radare2")
 
 PROJECTS_DIR = ".r2_projects"
+SYMBOLS_DIR = os.path.join(PROJECTS_DIR, "symbols")
+MS_SYMBOL_SERVER = "https://msdl.microsoft.com/download/symbols"
+
+# Global locks for projects to prevent concurrent git conflicts
+project_locks: Dict[str, threading.Lock] = {}
+project_locks_lock = threading.Lock()
+
+def get_project_lock(project_name: str) -> threading.Lock:
+    with project_locks_lock:
+        if project_name not in project_locks:
+            project_locks[project_name] = threading.Lock()
+        return project_locks[project_name]
 
 class Radare2SessionManager:
     """
@@ -20,6 +34,7 @@ class Radare2SessionManager:
         self.project_name = self._generate_project_name(file_path)
         self.project_path = os.path.join(PROJECTS_DIR, self.project_name)
         self.r2 = None
+        self.lock = get_project_lock(self.project_name)
 
     def _generate_project_name(self, file_path: str) -> str:
         """Generates a unique project name based on the file path hash."""
@@ -34,15 +49,32 @@ class Radare2SessionManager:
         return r2_cmd_with_retry(self.r2, command)
 
     def __enter__(self):
+        self.lock.acquire()
         try:
+            # Cleanup stale git locks if they exist
+            lock_file = os.path.join(self.project_path, ".git", "index.lock")
+            if os.path.exists(lock_file):
+                logger.info(f"Removing stale lock file: {lock_file}")
+                try:
+                    os.remove(lock_file)
+                except Exception as e:
+                    logger.warning(f"Failed to remove stale lock file {lock_file}: {e}")
+
             # Open in write mode if requested
             flags = ["-w"] if self.write_mode else []
             self.r2 = r2pipe.open(self.file_path, flags=flags)
-            
-            # Ensure project directory exists
+
+            # Ensure project and symbols directories exist
             if not os.path.exists(PROJECTS_DIR):
                 os.makedirs(PROJECTS_DIR)
-            
+            if not os.path.exists(SYMBOLS_DIR):
+                os.makedirs(SYMBOLS_DIR)
+
+            # Configure PDB settings
+            abs_symbols_dir = os.path.abspath(SYMBOLS_DIR)
+            self.cmd(f"e pdb.symstore = {abs_symbols_dir}")
+            self.cmd(f"e pdb.server = {MS_SYMBOL_SERVER}")
+
             # Use absolute path for dir.projects
             abs_proj_dir = os.path.abspath(PROJECTS_DIR)
             self.cmd(f"e dir.projects = {abs_proj_dir}")
@@ -75,13 +107,16 @@ class Radare2SessionManager:
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.r2:
-            try:
-                self.cmd(f"P+ {self.project_name}")
-            except Exception as e:
-                logger.warning(f"Failed to save project on exit: {e}")
-            finally:
-                self.r2.quit()
+        try:
+            if self.r2:
+                try:
+                    self.cmd(f"P+ {self.project_name}")
+                except Exception as e:
+                    logger.warning(f"Failed to save project on exit: {e}")
+                finally:
+                    self.r2.quit()
+        finally:
+            self.lock.release()
 
 # Global state for decompiler availability
 DECOMPILERS = {
@@ -314,6 +349,23 @@ def get_r2_cleanup_project(file_path: str) -> str:
         session.cmd(f"Pd {project_name}")
     return f"Successfully deleted project: {project_name}"
 
+@mcp_tool_wrapper
+def get_r2_load_pdb(file_path: str, pdb_path: str) -> str:
+    """
+    Loads an external .pdb file for the current analysis session.
+    """
+    with Radare2SessionManager(file_path) as session:
+        # idpi* imports symbols as flags
+        return session.cmd(f"idpi* {pdb_path}")
+
+@mcp_tool_wrapper
+def get_r2_download_pdb(file_path: str) -> str:
+    """
+    Downloads PDBs for the binary from Microsoft's Symbol Server.
+    """
+    with Radare2SessionManager(file_path) as session:
+        return session.cmd("idpd")
+
 def register(mcp: FastMCP):
     """
     Registers radare2 analysis tools with the MCP server.
@@ -342,5 +394,7 @@ def register(mcp: FastMCP):
     mcp.tool()(get_r2_list_types)
     mcp.tool()(get_r2_apply_type)
     mcp.tool()(get_r2_cleanup_project)
+    mcp.tool()(get_r2_load_pdb)
+    mcp.tool()(get_r2_download_pdb)
 
     logger.info("Radare2 module tools registered with persistent session support.")
