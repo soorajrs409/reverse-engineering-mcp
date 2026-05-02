@@ -27,3 +27,10 @@ The system SHALL automatically terminate and clean up debug sessions that have b
 #### Scenario: Cleanup of idle session
 - **WHEN** a session has not received a tool call for 10 minutes
 - **THEN** the system kills the background Radare2 process and removes the session from the manager
+
+### Requirement: Symbolic Handoff
+The system SHALL provide a tool to transition an active debugging session into a symbolic execution state.
+
+#### Scenario: Handoff to symbolic engine
+- **WHEN** the user requests a symbolic handoff for an active debug session
+- **THEN** the system captures the current register and memory state and initializes the symbolic engine with this context.

@@ -36,6 +36,10 @@ Radare2 MCP provides a wide array of tools categorized by their role in the bina
 | | `get_r2_patch_hex` | Direct byte-level patching. | Precise modification of data or code. |
 | **Advanced** | `get_r2_emulate_function` | ESIL-based static emulation. | Predict register state without execution. |
 | | `get_r2_define_type` | C-style type management. | Define structs, unions, and typedefs. |
+| **Symbolic** | `get_r2_symbolic_reachability` | Finds path to a target address. | Generates required input (stdin). |
+| | `get_r2_symbolic_solve_registers` | Solves for register constraints. | Find inputs for specific reg states. |
+| | `get_r2_symbolic_function_summary` | Symbolic function analysis. | Summarize side effects on registers. |
+| | `get_r2_symbolic_concolic_transition` | Bridge r2 debug to Angr. | Transition from live state to symbolic. |
 
 ---
 
@@ -61,6 +65,12 @@ Radare2 MCP provides a wide array of tools categorized by their role in the bina
 1. **Research**: Verify the instruction with `get_r2_disassemble`.
 2. **Action**: `get_r2_patch_asm(instruction="mov eax, 1; ret")`.
 3. **Verification**: Re-disassemble to confirm the patch.
+
+### 🔮 Symbolic Exploration
+> "Find the input required to reach the `success` function in `samples/branch_binary`."
+
+1. **Action**: `get_r2_symbolic_reachability(file_path="samples/branch_binary", target_address="success")`.
+2. **Result**: The tool returns the exact stdin (e.g., `crackme\n`) needed to reach the target.
 
 ### 🧠 Persistence & Knowledge Building
 Unlike raw Radare2, the MCP environment **remembers**. If you rename a function in one turn, every future tool call in that project will use the new name. This allows for long-term, incremental reverse engineering of complex targets.

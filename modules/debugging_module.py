@@ -35,6 +35,17 @@ class DebugSession:
             raise RuntimeError("Session closed.")
         return r2_cmd_with_retry(self.r2, command)
 
+    def get_state(self) -> dict:
+        """Captures the current state for concolic transition."""
+        with self.lock:
+            regs = json.loads(self.cmd("drj"))
+            # Get memory maps
+            maps = json.loads(self.cmd("dmj"))
+            return {
+                "registers": regs,
+                "maps": maps
+            }
+
     def close(self):
         if self.r2:
             try:

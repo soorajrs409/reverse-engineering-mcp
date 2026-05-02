@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
     radare2 \
     python3 \
     python3-pip \
+    python3-dev \
+    libffi-dev \
+    build-essential \
     git \
     curl \
     && rm -rf /var/lib/apt/lists/*
