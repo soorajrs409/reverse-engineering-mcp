@@ -92,7 +92,7 @@ docker run -i --rm radare2-mcp
 
 ### Claude Desktop
 
-Edit your `config.json` (typically `~/Library/Application Support/Claude/config.json` on macOS):
+Edit your `claude_desktop_config.json` (typically `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
 
 **Docker Version (Recommended):**
 ```json
@@ -112,6 +112,54 @@ Edit your `config.json` (typically `~/Library/Application Support/Claude/config.
   }
 }
 ```
+
+### Claude Code (CLI)
+
+Add the server using the interactive CLI:
+
+```bash
+claude mcp add radare2 --command uv --args ["run", "--project", "<path-to-repo>", "main.py"]
+```
+
+Or manually edit your `~/.claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "radare2": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "<path-to-repo>",
+        "main.py"
+      ]
+    }
+  }
+}
+```
+
+### Gemini (via Gemini CLI / Google AI Studio)
+
+For Gemini-based agents using the Model Context Protocol, add to your `~/.gemini/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "radare2": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "<path-to-repo>",
+        "main.py"
+      ]
+    }
+  }
+}
+```
+
+### Cursor
 
 ### Cursor
 
